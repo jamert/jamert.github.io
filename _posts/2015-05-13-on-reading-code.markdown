@@ -22,7 +22,7 @@ through I was constantly caught up in tries to get all details from first try.
 
 I was disappointed in my efficiency, so I've decided
 to find some tactics on Internet (and document my search in this blog post)
-but found almost nothing (helpful link http://www.gigamonkeys.com/code-reading/).
+but found almost nothing ([just one useful](http://www.gigamonkeys.com/code-reading/)).
 
 
 ## Day 7
