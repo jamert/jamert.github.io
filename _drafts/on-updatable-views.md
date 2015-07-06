@@ -42,45 +42,7 @@ tuples `(service, sla)` for each client:
 Let's write database schema to hold our data.
 
 {% highlight sql %}
-/* write here all data that are not supseptible to duplication */
-CREATE TABLE account
-(
-  id          serial,
-  public_id   integer NOT NULL,
-  name        text NOT NULL CHECK(name <> ''),
-  registered  timestamptz DEFAULT now(),
-
-  PRIMARY KEY (id)
-);
-
-/* add trigger for generation of public_id, will use simple function,
-   based on xor operation */
-CREATE OR REPLACE FUNCTION generate_public_id() RETURNS TRIGGER AS $$
-BEGIN
-  NEW.public_id = (id * 443) # 23537;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER generate_public_id BEFORE INSERT ON account
-  FOR EACH ROW EXECUTE PROCEDURE generate_public_id();
-
-/* usually I would make separate tables with id and name,
-   use those id everywere and force additional foreign keys,
-   (manual enums, I suppose)
-   but here I try to keep things simple */
-CREATE TYPE service_t AS ENUM ('basement', 'dugout', 'castle');
-CREATE TYPE sla_t AS ENUM ('normal', 'vip');
-
-/* our many-to-one relationship */
-CREATE TABLE account_service
-(
-  account integer NOT NULL,
-  service service_t NOT NULL,
-  sla     sla_t NOT NULL,
-
-  FOREIGN KEY (account) REFERENCES account(id)
-);
+{% include on-updatable-views/normalized-schema.sql %}
 {% endhighlight %}
 
 Here we'll implement additional layer of abstractions in form of updatable view. 'Updatable' part is provided
@@ -88,230 +50,22 @@ by triggers. You can use rules for this purpose, but I wouldn't recommend it jus
 mental load on yourself because triggers can do all the things on which rules are capable of and more.
 
 {% highlight sql %}
-/* create schema beforehand, to contain our new layer of abstractions */
-CREATE SCHEMA model;
-
-/* type for our service record */
-CREATE TYPE model.provided_service_t AS
-(
-  service service_t,
-  sla     sla_t
-);
-
-/* basic view
-   in practice some joins are necessary if data is any complex */
-CREATE OR REPLACE VIEW model.account AS
-  SELECT
-      a.public_id AS id,
-      a.name AS name,
-      ARRAY(SELECT
-                ROW(s.service, s.sla)::model.provided_service_t
-              FROM account_service s
-              WHERE s.account = a.id) AS services,
-      a.registered AS registered
-    FROM account a
-    ORDER BY 1;
-
-CREATE OR REPLACE FUNCTION model.account_insert() RETURNS TRIGGER AS $$
-DECLARE
-  db_id integer;
-BEGIN
-  -- make account
-  INSERT INTO account(name) VALUES (NEW.name)
-    RETURNING id INTO db_id;
-  -- add all services
-  INSERT INTO account_service(account, service, sla)
-    SELECT db_id, ps.service, ps.sla
-      FROM unnest(NEW.services) AS ps;
-  -- we need to update our value with generated public id
-  -- because it is primary key of our view
-  -- you'll see later, when we set up SQLAlchemy mappings
-  SELECT public_id INTO NEW.id
-    FROM account
-    WHERE id = db_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER account_insert INSTEAD OF INSERT ON model.account
-  FOR EACH ROW EXECUTE PROCEDURE model.account_insert();
-
-CREATE OR REPLACE FUNCTION model.account_update() RETURNS TRIGGER AS $$
-DECLARE
-  db_id integer;
-  ps    provided_service_t;
-BEGIN
-  SELECT id INTO db_id
-    FROM account
-    WHERE public_id = NEW.id;
-
-  /* this is just to show another technique to deal with changes in array fields
-     if you can, then I'd recomment to write simple query without special PL/PGSQL constructs */
-  -- add new services
-  FOREACH ps IN ARRAY NEW.services LOOP
-    IF NOT (ps = ANY(OLD.services)) THEN
-      INSERT INTO account_service(account, service, sla) VALUES
-        (db_id, ps.service, ps.sla);
-    END IF;
-  END LOOP;
-
-  -- delete removed services
-  FOREACH ps IN ARRAY OLD.services LOOP
-    IF NOT (ps = ANY(NEW.services)) THEN
-      DELETE FROM account_service
-        WHERE account = db_id
-          AND service = ps.service
-          AND sla = ps.sla;
-    END IF;
-  END LOOP;
-
-  -- 'registered field' is read only, so just skip it
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER account_update INSTEAD OF UPDATE ON model.account
-  FOR EACH ROW EXECUTE PROCEDURE model.account_update();
-
-
-CREATE OR REPLACE FUNCTION model.account_delete() RETURNS TRIGGER AS $$
-DECLARE
-  db_id integer;
-BEGIN
-  /* may be use cascaded deletes? */
-  SELECT id INTO db_id
-    FROM account
-    WHERE public_id = OLD.id;
-
-  DELETE FROM account_service
-    WHERE account = db_id;
-
-  DELETE FROM account
-    WHERE id = db_id;
-
-  RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER account_delete INSTEAD OF DELETE ON model.account
-  FOR EACH ROW EXECUTE PROCEDURE model.account_delete();
+{% include on-updatable-views/updatable-view.sql %}
 {% endhighlight %}
 
+Our view now supports all modifying operations.
 
 Let's fill our tables with some test data and make sure
 our view is working as expected.
 
 {% highlight sql %}
-INSERT INTO model.account(name, services) VALUES
-  ('Dracula', '{"(castle, vip)","(dugout, normal)"}'),
-  ('Blue Beard', '{}'::model.provided_service_t[]);
+{% include on-updatable-views/test-data.sql %}
 {% endhighlight %}
 
-Our python code will be much more straightforward and simple.
+Our python code will be much more straightforward and simple due
+to massive SQL line count.
 
 {% highlight python %}
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-
-from sqlalchemy import Column, Integer, String, DateTime
-
-
-metadata = MetaData()
-Base = declarative_base(metadata=metadata)
-
-
-# I try to include all complementary tricks
-# that I think could be useful in this pattern
-# so here is parsing of composite array types
-class TupleArrayType(types.TypeDecorator):
-    """
-    Parses in and out the array of
-    the following format: {"(a,b)", ...}
-    """
-    impl = types.String
-
-    # customization point
-    fields = ()
-
-    # dummy method to be rewritten in descendants
-    # should return proper model instance
-    def create_result_object(self, *args):
-        raise NotImplementedError
-
-    def process_bind_param(self, value, dialect):
-        return ('{' +
-                ','.join(
-                    [''.join(('"(',
-                              ','.join([str(getattr(item, f) or '')
-                                        for f in self.fields]),
-                              ')"'))
-                        for item in value]
-                    )
-                + '}')
-
-    def process_result_value(self, value, dialect):
-        for symbol in '{}"()':
-            value = value.replace(symbol, '')
-        if value:
-            # from Python Standard Library documentation:
-            # The left-to-right evaluation order of the iterables is guaranteed
-            # This makes possible an idiom for clustering a data series
-            # into n-length groups using zip(*[iter(s)]*n)
-            return [self.create_result_object(*args) for args
-                    in zip(*[iter(value.split(','))]*len(self.fields))]
-        else:
-            return []
-
-
-class ProvidedService(object):
-    __slots__ = ['service', 'sla']
-
-
-class ProvidedServiceArrayType(TupleArrayType):
-    fields = ProvidedService.__slots__
-
-    def create_result_object(self, service, sla):
-        return ProvidedService(service, sla)
-
-
-# notice that in table definition you use just simple columns
-# (by now you probably hate me for making you write so much SQL)
-class Account(Base):
-    id = Column(Ingeger, primary_key=True)
-    name = Column(String)
-    services = Column(ProvidedServiceArrayType)
-    registered = Column(DateTime(timezone=True))
-
-
-def main():
-    engine = create_engine('postgresql+psycopg2://jamert:pass@127.0.0.1/db')
-    Session = scoped_session(sessionmaker(bind=engine))
-    db = Session()
-
-    # checking that modifications to our object goes smoothly
-    bb_acc = db.query(Account)\
-               .filter(Account.name == 'Blue Beard')\
-               .first()
-    print 'before:', bb_acc
-    bb.acc.services.add(ProvidedService('basement', 'vip'))
-    db.commit()
-    print 'after:', bb_acc
-
-    # checking that creation of new objects goes smoothly
-    franky = Account(name='Mr. Frankenstain',
-                     services=[ProvidedService('basement', 'normal')])
-    db.add(franky)
-    # remember that I said about setting NEW.id in model.account_insert?
-    # if you remove that code from procedure
-    # you'll get FlushError here, because SQLAlchemy cannot get primary id of record
-    db.commit()
-    print 'franky:', franky
-
-
-
-if __name__ == '__main__':
-    main()
-
+{% include on-updatable-views/test_view.py %}
 {% endhighlight %}
 
