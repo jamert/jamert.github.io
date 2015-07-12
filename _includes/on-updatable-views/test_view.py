@@ -27,7 +27,6 @@ class TupleArrayType(types.TypeDecorator):
         raise NotImplementedError
 
     def process_bind_param(self, value, dialect):
-        print value
         return ('{' +
                 ','.join(
                     [''.join(('"(',
@@ -105,7 +104,7 @@ def main():
     db.add(franky)
     # remember that I said about setting NEW.id in model.account_insert?
     # if you remove that code from procedure
-    # you'll get FlushError here,
+    # you'll get FlushError exception here,
     # because SQLAlchemy cannot get primary id of record
     db.commit()
     print 'franky: id {0}, services {1}'.format(franky.id, franky.services)
@@ -113,4 +112,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

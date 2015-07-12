@@ -69,3 +69,31 @@ to massive SQL line count.
 {% include on-updatable-views/test_view.py %}
 {% endhighlight %}
 
+
+## Reflection
+
+After implementation, we should carefully think about what the hell we just did. Like any technique, it
+has its own application area and its own downsides.
+
+One unquestionable bonus from this transformation is that it results in layer of nicely formatted
+domain objects directly in your database. You see exactly the same data as your application code.
+It helps when you need to correct something manually or to debug something.
+
+One unquestionable downside is that you need to write many lines of SQL.
+
+On serious side, though, this approach is handy when you find yourself making several database
+requests just to validate change in some object (for example, if your data must conform to some
+complex condition for which you need to fetch data from several tables). Because SQL is executed
+on database side you can save on network latency if your checks are executed here (but you may
+have problem to deliver error message to user, if something is actually wrong, it is something
+to think about). You also have more leeway in changing underlying structure of database
+provided that you save 'nice' interface intact.
+
+On downsides sides though, your SQL going to be non-trivial and you probably need to test it somehow,
+but testing tools for SQL are not at the same level as popular turing-complete languages.
+
+
+## Conclusion
+
+I advice you to try writing updatable views for your application and see for yourself if they are
+to your liking.
