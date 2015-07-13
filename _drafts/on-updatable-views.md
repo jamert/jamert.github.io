@@ -1,7 +1,7 @@
 ---
 layout: post
 title: On Updatable Views
-subtitle: Fat model, skinny controller
+subtitle: Let split our model
 tags:
   - python
   - postgresql
@@ -9,13 +9,15 @@ tags:
 
 In database courses they tell you that your data should lie in normalized tables with
 foreign keys all the way down. But as application developer you want somehow to get your
-data back in one semantically meaningful lump. One way is to use ORM that will write
-your queries for you provided that you describe all polygamous relationships between
-tables using fancy ORM syntax. I can list actual downsides for this, but it really
-boils down for me to one thing: I'd rather invest in learning SQL really good, than
-learning ORM really good. Other way is to make some views, and if you must implement not
-only 'R' in 'CRUD' then your view should be updatable. I like second approach because
-this is only one I can implement (TODO: write more authoritative reason). I am going to
+data back in one semantically meaningful lump.
+
+One way is to use ORM that will write your queries for you provided that you
+describe all polygamous relationships between tables using fancy ORM syntax.
+I can list actual downsides for this, but it really boils down for me to one thing:
+I'd rather invest in learning SQL really good than learning ORM really good.
+
+Other way is to make some views, and if you need to implement not
+only 'R' in 'CRUD' then your view should be updatable. I am going to
 use Python, PosgreSQL and SQLAlchemy with psycopg2 and present some example of updatable views
 in action.
 
@@ -31,7 +33,7 @@ I think I want to get data for each client in the following form, where `service
 tuples `(service, sla)` for each client:
 
 {% highlight text %}
- id  |      name       |     services       |          registered
+id   |      name       |     services       |          registered
 -----+-----------------+--------------------+-------------------------------
  542 | Enterprise inc. | {"(basement,vip)"} | 2015-06-29 16:33:42.258203+00
 {% endhighlight %}
@@ -75,25 +77,26 @@ to massive SQL line count.
 After implementation, we should carefully think about what the hell we just did. Like any technique, it
 has its own application area and its own downsides.
 
+One unquestionable downside is that you need to write lots of SQL. Your SQL code is going to
+be non-trivial and consequently, you'll need to test it somehow. However, testing for SQL
+are not at the same level as popular turing-complete languages. Personally, I deal with it
+by testing my application against real database. It is not ideal solution, but it's good enough for me.
+
 One unquestionable bonus from this transformation is that it results in layer of nicely formatted
 domain objects directly in your database. You see exactly the same data as your application code.
-It helps when you need to correct something manually or to debug something.
-
-One unquestionable downside is that you need to write many lines of SQL.
+It helps when you need to correct data manually or to debug something.
 
 On serious side, though, this approach is handy when you find yourself making several database
 requests just to validate change in some object (for example, if your data must conform to some
 complex condition for which you need to fetch data from several tables). Because SQL is executed
 on database side you can save on network latency if your checks are executed here (but you may
-have problem to deliver error message to user, if something is actually wrong, it is something
+have problem to deliver error message to user in case something is actually wrong, just something
 to think about). You also have more leeway in changing underlying structure of database
 provided that you save 'nice' interface intact.
-
-On downsides sides though, your SQL going to be non-trivial and you probably need to test it somehow,
-but testing tools for SQL are not at the same level as popular turing-complete languages.
 
 
 ## Conclusion
 
 I advice you to try writing updatable views for your application and see for yourself if they are
-to your liking.
+to your liking. SQL is not as unpleasant as you may think and you'll deepen your relationship with
+your database, which is a good thing.

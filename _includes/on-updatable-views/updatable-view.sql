@@ -61,8 +61,8 @@ BEGIN
 
   /* this is just to show another technique
      to deal with changes in array fields
-     if you can, then I'd recomment to write simple query
-     without special PL/PGSQL loop constructs */
+     if you can, then I'd recommend to write simple query
+     without special PL/pgSQL loop constructs */
   -- add new services
   FOREACH ps IN ARRAY NEW.services LOOP
     IF NOT (ps = ANY(OLD.services)) THEN
@@ -81,7 +81,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  -- 'registered field' is read only, so just skip it
+  -- 'registered' field is read only, so just skip it
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -94,7 +94,6 @@ CREATE OR REPLACE FUNCTION model.account_delete() RETURNS TRIGGER AS $$
 DECLARE
   db_id integer;
 BEGIN
-  /* may be use cascaded deletes? */
   SELECT id INTO db_id
     FROM account
     WHERE public_id = OLD.id;
