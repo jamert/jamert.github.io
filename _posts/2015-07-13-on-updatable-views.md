@@ -33,7 +33,7 @@ I think I want to get data for each client in the following form, where `service
 tuples `(service, sla)` for each client:
 
 {% highlight text %}
-id   |      name       |     services       |          registered
+ id  |      name       |     services       |          registered
 -----+-----------------+--------------------+-------------------------------
  542 | Enterprise inc. | {"(basement,vip)"} | 2015-06-29 16:33:42.258203+00
 {% endhighlight %}
