@@ -10690,6 +10690,76 @@ var _user$project$Snake$gridStep = 20;
 var _user$project$Snake$_p3 = {ctor: '_Tuple2', _0: (_user$project$Snake$gridWidth + 1) * _user$project$Snake$gridStep, _1: (_user$project$Snake$gridHeight + 1) * _user$project$Snake$gridStep};
 var _user$project$Snake$gameWidth = _user$project$Snake$_p3._0;
 var _user$project$Snake$gameHeight = _user$project$Snake$_p3._1;
+var _user$project$Snake$displayInstructions = function (size) {
+	var cntSize = _elm_lang$core$Basics$toFloat(size) / 4;
+	var arrPos = cntSize / 2;
+	var spacePos = (cntSize * 3) / 2;
+	return A4(
+		_evancz$elm_graphics$Element$container,
+		size,
+		_user$project$Snake$gameHeight,
+		_evancz$elm_graphics$Element$middle,
+		A3(
+			_evancz$elm_graphics$Collage$collage,
+			size,
+			size,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0, _1: cntSize},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString('W'))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0, _1: arrPos},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString(
+							_elm_lang$core$String$fromChar(
+								_elm_lang$core$Native_Utils.chr('⬆'))))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0, _1: 0 - cntSize},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString('S'))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0, _1: 0 - arrPos},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString(
+							_elm_lang$core$String$fromChar(
+								_elm_lang$core$Native_Utils.chr('⬇'))))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0 - cntSize, _1: 0},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString('A'))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0 - arrPos, _1: 0},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString(
+							_elm_lang$core$String$fromChar(
+								_elm_lang$core$Native_Utils.chr('⬅'))))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: cntSize, _1: 0},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString('D'))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: arrPos, _1: 0},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString(
+							_elm_lang$core$String$fromChar(
+								_elm_lang$core$Native_Utils.chr('➡'))))),
+					A2(
+					_evancz$elm_graphics$Collage$move,
+					{ctor: '_Tuple2', _0: 0, _1: 0 - spacePos},
+					_evancz$elm_graphics$Collage$text(
+						_evancz$elm_graphics$Text$fromString('SPACEBAR = PAUSE')))
+				])));
+};
 var _user$project$Snake$displayFood = function (food) {
 	return A2(
 		_evancz$elm_graphics$Collage$move,
@@ -10744,33 +10814,48 @@ var _user$project$Snake$displaySnake = function (_p8) {
 				_user$project$Snake$displaySnakeTail(_p9.tail)
 			]));
 };
+var _user$project$Snake$displayGame = function (_p10) {
+	var _p11 = _p10;
+	return A4(
+		_evancz$elm_graphics$Element$container,
+		_user$project$Snake$gameWidth,
+		_user$project$Snake$gameHeight,
+		_evancz$elm_graphics$Element$middle,
+		A3(
+			_evancz$elm_graphics$Collage$collage,
+			_user$project$Snake$gameHeight,
+			_user$project$Snake$gameWidth,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_evancz$elm_graphics$Collage$filled,
+					_user$project$Snake$fieldColor,
+					A2(_evancz$elm_graphics$Collage$rect, _user$project$Snake$gameWidth, _user$project$Snake$gameHeight)),
+					_user$project$Snake$displayFood(_p11.food),
+					_user$project$Snake$displaySnake(_p11.snake)
+				])));
+};
 var _user$project$Snake$display = F2(
-	function (_p11, _p10) {
-		var _p12 = _p11;
-		var _p13 = _p10;
+	function (_p12, game) {
+		var _p13 = _p12;
+		var _p14 = _p13._0;
 		return A4(
 			_evancz$elm_graphics$Element$container,
-			_p12._0,
-			_p12._1,
+			_p14,
+			_p13._1,
 			_evancz$elm_graphics$Element$middle,
-			A3(
-				_evancz$elm_graphics$Collage$collage,
-				_user$project$Snake$gameHeight,
-				_user$project$Snake$gameWidth,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_evancz$elm_graphics$Collage$filled,
-						_user$project$Snake$fieldColor,
-						A2(_evancz$elm_graphics$Collage$rect, _user$project$Snake$gameWidth, _user$project$Snake$gameHeight)),
-						_user$project$Snake$displayFood(_p13.food),
-						_user$project$Snake$displaySnake(_p13.snake)
-					])));
+			A2(
+				_evancz$elm_graphics$Element$beside,
+				A2(
+					_evancz$elm_graphics$Element$beside,
+					A2(_evancz$elm_graphics$Element$spacer, ((_p14 - _user$project$Snake$gameWidth) / 2) | 0, ((_p14 - _user$project$Snake$gameWidth) / 2) | 0),
+					_user$project$Snake$displayGame(game)),
+				_user$project$Snake$displayInstructions(((_p14 - _user$project$Snake$gameWidth) / 2) | 0)));
 	});
 var _user$project$Snake$view = function (game) {
-	var _p14 = game.size;
-	var width = _p14.width;
-	var height = _p14.height;
+	var _p15 = game.size;
+	var width = _p15.width;
+	var height = _p15.height;
 	return _evancz$elm_graphics$Element$toHtml(
 		A2(
 			_user$project$Snake$display,
@@ -10781,9 +10866,9 @@ var _user$project$Snake$Point = F2(
 	function (a, b) {
 		return {x: a, y: b};
 	});
-var _user$project$Snake$Snake = F3(
-	function (a, b, c) {
-		return {head: a, tail: b, direction: c};
+var _user$project$Snake$Snake = F4(
+	function (a, b, c, d) {
+		return {head: a, tail: b, direction: c, nextDirection: d};
 	});
 var _user$project$Snake$Game = F6(
 	function (a, b, c, d, e, f) {
@@ -10801,7 +10886,8 @@ var _user$project$Snake$makeSnake = function (hd) {
 				{x: hd.x - 2, y: hd.y - 2},
 				{x: hd.x - 3, y: hd.y - 2}
 			]),
-		direction: _user$project$Snake$Right
+		direction: _user$project$Snake$Right,
+		nextDirection: _user$project$Snake$Right
 	};
 };
 var _user$project$Snake$Left = {ctor: 'Left'};
@@ -10809,10 +10895,10 @@ var _user$project$Snake$Down = {ctor: 'Down'};
 var _user$project$Snake$Up = {ctor: 'Up'};
 var _user$project$Snake$relativeControls = F2(
 	function (press, previous) {
-		var _p15 = {ctor: '_Tuple2', _0: press, _1: previous};
-		switch (_p15._0.ctor) {
+		var _p16 = {ctor: '_Tuple2', _0: press, _1: previous};
+		switch (_p16._0.ctor) {
 			case 'Left':
-				switch (_p15._1.ctor) {
+				switch (_p16._1.ctor) {
 					case 'Up':
 						return _user$project$Snake$Left;
 					case 'Down':
@@ -10823,7 +10909,7 @@ var _user$project$Snake$relativeControls = F2(
 						return _user$project$Snake$Up;
 				}
 			case 'Right':
-				switch (_p15._1.ctor) {
+				switch (_p16._1.ctor) {
 					case 'Up':
 						return _user$project$Snake$Right;
 					case 'Down':
@@ -10839,12 +10925,12 @@ var _user$project$Snake$relativeControls = F2(
 	});
 var _user$project$Snake$absoluteControls = F2(
 	function (press, previous) {
-		var _p16 = {ctor: '_Tuple2', _0: press, _1: previous};
+		var _p17 = {ctor: '_Tuple2', _0: press, _1: previous};
 		_v7_8:
 		do {
-			switch (_p16._0.ctor) {
+			switch (_p17._0.ctor) {
 				case 'Up':
-					switch (_p16._1.ctor) {
+					switch (_p17._1.ctor) {
 						case 'Left':
 							return _user$project$Snake$Up;
 						case 'Right':
@@ -10853,7 +10939,7 @@ var _user$project$Snake$absoluteControls = F2(
 							break _v7_8;
 					}
 				case 'Down':
-					switch (_p16._1.ctor) {
+					switch (_p17._1.ctor) {
 						case 'Left':
 							return _user$project$Snake$Down;
 						case 'Right':
@@ -10862,7 +10948,7 @@ var _user$project$Snake$absoluteControls = F2(
 							break _v7_8;
 					}
 				case 'Left':
-					switch (_p16._1.ctor) {
+					switch (_p17._1.ctor) {
 						case 'Up':
 							return _user$project$Snake$Left;
 						case 'Down':
@@ -10871,7 +10957,7 @@ var _user$project$Snake$absoluteControls = F2(
 							break _v7_8;
 					}
 				default:
-					switch (_p16._1.ctor) {
+					switch (_p17._1.ctor) {
 						case 'Up':
 							return _user$project$Snake$Right;
 						case 'Down':
@@ -10897,23 +10983,24 @@ var _user$project$Snake$SelfCollision = {ctor: 'SelfCollision'};
 var _user$project$Snake$Eaten = {ctor: 'Eaten'};
 var _user$project$Snake$Normal = {ctor: 'Normal'};
 var _user$project$Snake$stepSnake = F3(
-	function (t, _p17, food) {
-		var _p18 = _p17;
-		var _p20 = _p18.tail;
-		var _p19 = _p18.head;
-		var eaten = _elm_lang$core$Native_Utils.eq(_p19.x, food.x) && _elm_lang$core$Native_Utils.eq(_p19.y, food.y);
-		var tail$ = eaten ? A2(_user$project$Snake$growTail, _p20, _p19) : A2(_user$project$Snake$moveTail, _p20, _p19);
-		var move = _user$project$Snake$dirToMove(_p18.direction);
+	function (t, _p18, food) {
+		var _p19 = _p18;
+		var _p22 = _p19.tail;
+		var _p21 = _p19.nextDirection;
+		var _p20 = _p19.head;
+		var eaten = _elm_lang$core$Native_Utils.eq(_p20.x, food.x) && _elm_lang$core$Native_Utils.eq(_p20.y, food.y);
+		var tail$ = eaten ? A2(_user$project$Snake$growTail, _p22, _p20) : A2(_user$project$Snake$moveTail, _p22, _p20);
+		var move = _user$project$Snake$dirToMove(_p21);
 		var head$ = _elm_lang$core$Native_Utils.update(
-			_p19,
-			{x: _p19.x + move.x, y: _p19.y + move.y});
+			_p20,
+			{x: _p20.x + move.x, y: _p20.y + move.y});
 		var outside = (_elm_lang$core$Native_Utils.cmp(head$.x, ((0 - _user$project$Snake$gridWidth) / 2) | 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(head$.x, (_user$project$Snake$gridWidth / 2) | 0) > 0) || ((_elm_lang$core$Native_Utils.cmp(head$.y, ((0 - _user$project$Snake$gridHeight) / 2) | 0) < 0) || (_elm_lang$core$Native_Utils.cmp(head$.y, (_user$project$Snake$gridHeight / 2) | 0) > 0)));
-		var msg = eaten ? _user$project$Snake$Eaten : (A2(_elm_lang$core$List$member, _p19, _p20) ? _user$project$Snake$SelfCollision : (outside ? _user$project$Snake$BoundaryCollision : _user$project$Snake$Normal));
+		var msg = eaten ? _user$project$Snake$Eaten : (A2(_elm_lang$core$List$member, _p20, _p22) ? _user$project$Snake$SelfCollision : (outside ? _user$project$Snake$BoundaryCollision : _user$project$Snake$Normal));
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Native_Utils.update(
-				_p18,
-				{head: head$, tail: tail$}),
+				_p19,
+				{head: head$, tail: tail$, direction: _p21}),
 			_1: msg
 		};
 	});
@@ -10935,11 +11022,11 @@ var _user$project$Snake$keyboardProcessor = F2(
 	function (down, keyCode) {
 		var ch = _elm_lang$core$Char$toLower(
 			_elm_lang$core$Char$fromCode(keyCode));
-		var _p21 = {ctor: '_Tuple2', _0: down, _1: ch};
+		var _p23 = {ctor: '_Tuple2', _0: down, _1: ch};
 		_v9_6:
 		do {
-			if ((_p21.ctor === '_Tuple2') && (_p21._0 === true)) {
-				switch (_p21._1.valueOf()) {
+			if ((_p23.ctor === '_Tuple2') && (_p23._0 === true)) {
+				switch (_p23._1.valueOf()) {
 					case 'w':
 						return _user$project$Snake$Turn(_user$project$Snake$Up);
 					case 's':
@@ -10969,82 +11056,82 @@ var _user$project$Snake$init = {
 	_0: _user$project$Snake$defaultGame,
 	_1: A3(
 		_elm_lang$core$Task$perform,
-		function (_p22) {
+		function (_p24) {
 			return _user$project$Snake$NoOp;
 		},
 		_user$project$Snake$Resize,
 		_elm_lang$window$Window$size)
 };
 var _user$project$Snake$stepGame = F2(
-	function (msg, _p23) {
+	function (msg, _p25) {
 		stepGame:
 		while (true) {
-			var _p24 = _p23;
-			var _p30 = _p24.snake;
-			var _p29 = _p24.paused;
-			var _p28 = _p24;
-			var _p25 = msg;
-			switch (_p25.ctor) {
+			var _p26 = _p25;
+			var _p32 = _p26.snake;
+			var _p31 = _p26.paused;
+			var _p30 = _p26;
+			var _p27 = msg;
+			switch (_p27.ctor) {
 				case 'NoOp':
-					return {ctor: '_Tuple2', _0: _p28, _1: _elm_lang$core$Platform_Cmd$none};
+					return {ctor: '_Tuple2', _0: _p30, _1: _elm_lang$core$Platform_Cmd$none};
 				case 'Resize':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
-							_p28,
-							{size: _p25._0}),
+							_p30,
+							{size: _p27._0}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ChangeConrols':
-					var controls$ = _elm_lang$core$Native_Utils.eq(_p28.controls, _user$project$Snake$absoluteControls) ? _user$project$Snake$relativeControls : _user$project$Snake$absoluteControls;
+					var controls$ = _elm_lang$core$Native_Utils.eq(_p30.controls, _user$project$Snake$absoluteControls) ? _user$project$Snake$relativeControls : _user$project$Snake$absoluteControls;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
-							_p28,
+							_p30,
 							{controls: controls$}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Turn':
-					var direction$ = A2(_p28.controls, _p25._0, _p30.direction);
+					var nextDirection = A2(_p30.controls, _p27._0, _p32.direction);
 					var snake$ = _elm_lang$core$Native_Utils.update(
-						_p30,
-						{direction: direction$});
+						_p32,
+						{nextDirection: nextDirection});
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
-							_p28,
+							_p30,
 							{snake: snake$}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Tick':
-					if (_p29) {
-						return {ctor: '_Tuple2', _0: _p28, _1: _elm_lang$core$Platform_Cmd$none};
+					if (_p31) {
+						return {ctor: '_Tuple2', _0: _p30, _1: _elm_lang$core$Platform_Cmd$none};
 					} else {
-						var _p26 = A3(_user$project$Snake$stepSnake, _p25._0, _p30, _p24.food);
-						var snake$ = _p26._0;
-						var msg = _p26._1;
+						var _p28 = A3(_user$project$Snake$stepSnake, _p27._0, _p32, _p26.food);
+						var snake$ = _p28._0;
+						var msg = _p28._1;
 						var game$ = _elm_lang$core$Native_Utils.update(
-							_p28,
+							_p30,
 							{snake: snake$});
-						var _p27 = msg;
-						switch (_p27.ctor) {
+						var _p29 = msg;
+						switch (_p29.ctor) {
 							case 'Eaten':
 								var _v13 = _user$project$Snake$Eat,
 									_v14 = game$;
 								msg = _v13;
-								_p23 = _v14;
+								_p25 = _v14;
 								continue stepGame;
 							case 'SelfCollision':
 								var _v15 = _user$project$Snake$Collide,
-									_v16 = _p28;
+									_v16 = _p30;
 								msg = _v15;
-								_p23 = _v16;
+								_p25 = _v16;
 								continue stepGame;
 							case 'BoundaryCollision':
 								var _v17 = _user$project$Snake$Collide,
-									_v18 = _p28;
+									_v18 = _p30;
 								msg = _v17;
-								_p23 = _v18;
+								_p25 = _v18;
 								continue stepGame;
 							default:
 								return {ctor: '_Tuple2', _0: game$, _1: _elm_lang$core$Platform_Cmd$none};
@@ -11053,7 +11140,7 @@ var _user$project$Snake$stepGame = F2(
 				case 'Eat':
 					return {
 						ctor: '_Tuple2',
-						_0: _p28,
+						_0: _p30,
 						_1: A2(
 							_elm_lang$core$Random$generate,
 							_user$project$Snake$Grow,
@@ -11063,19 +11150,19 @@ var _user$project$Snake$stepGame = F2(
 								A2(_elm_lang$core$Random$int, ((0 - _user$project$Snake$gridHeight) / 2) | 0, (_user$project$Snake$gridHeight / 2) | 0)))
 					};
 				case 'Grow':
-					var food$ = {x: _p25._0._0, y: _p25._0._1};
-					var inside = A2(_elm_lang$core$List$member, food$, _p30.tail) || _elm_lang$core$Native_Utils.eq(food$, _p30.head);
+					var food$ = {x: _p27._0._0, y: _p27._0._1};
+					var inside = A2(_elm_lang$core$List$member, food$, _p32.tail) || _elm_lang$core$Native_Utils.eq(food$, _p32.head);
 					if (inside) {
 						var _v19 = _user$project$Snake$Eat,
-							_v20 = _p28;
+							_v20 = _p30;
 						msg = _v19;
-						_p23 = _v20;
+						_p25 = _v20;
 						continue stepGame;
 					} else {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
-								_p28,
+								_p30,
 								{food: food$}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
@@ -11083,18 +11170,18 @@ var _user$project$Snake$stepGame = F2(
 				case 'Collide':
 					var _v21 = _user$project$Snake$Pause,
 						_v22 = _elm_lang$core$Native_Utils.update(
-						_p28,
+						_p30,
 						{gameOver: true});
 					msg = _v21;
-					_p23 = _v22;
+					_p25 = _v22;
 					continue stepGame;
 				default:
-					return (_p24.gameOver && _p29) ? _user$project$Snake$init : {
+					return (_p26.gameOver && _p31) ? _user$project$Snake$init : {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
-							_p28,
+							_p30,
 							{
-								paused: _elm_lang$core$Basics$not(_p29)
+								paused: _elm_lang$core$Basics$not(_p31)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -11107,7 +11194,7 @@ var _user$project$Snake$main = {
 			init: _user$project$Snake$init,
 			update: _user$project$Snake$stepGame,
 			view: _user$project$Snake$view,
-			subscriptions: function (_p31) {
+			subscriptions: function (_p33) {
 				return _elm_lang$core$Platform_Sub$batch(
 					_elm_lang$core$Native_List.fromArray(
 						[
